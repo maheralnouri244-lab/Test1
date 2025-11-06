@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <main>
+    <h1>Login</h1>
+    <form id="loginForm">
+      <label>Email <input name="email" type="email" required></label>
+      <label>Password <input name="password" type="password" required></label>
+      <button type="submit">Login</button>
+    </form>
+    <p>Or <a href="register.html">Register</a></p>
+    <div id="msg"></div>
+  </main>
+
+  <script type="module">
+    import { login } from './js/auth.js';
+    const form = document.getElementById('loginForm');
+    const msg = document.getElementById('msg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      const formData = Object.fromEntries(new FormData(form));
+      try {
+        await login(formData);
+        location.href = 'blogs.html';
+      } catch (err) {
+        msg.textContent = err.data?.message || 'Login failed';
+      }
+    });
+
+    // إن كان مسجل دخول بالفعل اذهب للقوائم
+    if (localStorage.getItem('token')) location.href = 'blogs.html';
+  </script>
+</body>
+</html>

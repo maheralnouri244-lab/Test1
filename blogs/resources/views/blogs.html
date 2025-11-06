@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Blogs</title></head>
+<body>
+  <header>
+    <h1>Blogs</h1>
+    <div id="user"></div>
+    <button id="logoutBtn">Logout</button>
+    <a href="create.html">Create</a>
+  </header>
+
+  <ul id="list"></ul>
+  <div id="msg"></div>
+
+  <script type="module">
+    import { apiFetch } from './js/api.js';
+    import { logout, currentUser, isAuthenticated } from './js/auth.js';
+
+    if (!isAuthenticated()) location.href = 'login.html';
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('user').textContent = currentUser()?.name || '';
+
+    async function load() {
+      try {
+        const blogs = await apiFetch('/blogs');
+        const list = document.getElementById('list');
+        list.innerHTML = blogs.map(b => {
+          const owner = b.user?.name || ('user#' + b.user_id);
+          const canEdit = currentUser() && currentUser().id === b.user_id;
+          return `<li>
+            <a href="blog.html?id=${b.id}">${escapeHtml(b.title)}</a>
+            <small>by ${escapeHtml(owner)}</small>
+            ${canEdit ? `<button data-id="${b.id}" class="edit">Edit</button> <button data-id="${b.id}" class="del">Delete</button>` : ''}
+          </li>`;
+        }).join('');
+      } catch (err) {
+        document.getElementById('msg').textContent = err.data?.message || 'Failed to load';
+      }
+    }
+
+    document.getElementById('list').addEventListener('click', async (e) => {
+      if (e.target.matches('.del')) {
+        const id = e.target.dataset.id;
+        if (!confirm('Delete?')) return;
+        try {
+          await apiFetch('/blogs/' + id, { method: 'DELETE' });
+          load();
+        } catch (err) {
+          alert(err.data?.message || 'Delete failed');
+        }
+      } else if (e.target.matches('.edit')) {
+        location.href = `create.html?id=${e.target.dataset.id}`;
+      }
+    });
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    load();
+  </script>
+</body>
+</html>

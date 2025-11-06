@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Blog</title></head>
+<body>
+  <div id="container"></div>
+  <script type="module">
+    import { apiFetch } from './js/api.js';
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (!id) location.href = 'blogs.html';
+    (async ()=>{
+      try {
+        const b = await apiFetch('/blogs/' + id);
+        document.getElementById('container').innerHTML = `<h1>${escapeHtml(b.title)}</h1><p>${escapeHtml(b.body)}</p><small>by ${escapeHtml(b.user?.name || ('user#'+b.user_id))}</small>`;
+      } catch (err) {
+        document.getElementById('container').textContent = 'Cannot load';
+      }
+    })();
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+  </script>
+</body>
+</html>
