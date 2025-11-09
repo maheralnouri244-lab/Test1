@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Register</title></head>
+<body>
+  <h1>Register</h1>
+  <form id="regForm">
+    <label>Name <input name="name" required></label>
+    <label>Email <input name="email" type="email" required></label>
+    <label>Password <input name="password" type="password" required></label>
+    <button>Register</button>
+  </form>
+  <div id="msg"></div>
+  <script type="module">
+    import { register } from './js/auth.js';
+    const form = document.getElementById('regForm');
+    const msg = document.getElementById('msg');
+    form.addEventListener('submit', async e=>{
+      e.preventDefault();
+      try {
+        await register(Object.fromEntries(new FormData(form)));
+        location.href = 'blogs.html';
+      } catch (err) {
+        msg.textContent = err.data?.message || 'Register failed';
+      }
+    });
+    if (localStorage.getItem('token')) location.href = 'blogs.html';
+  </script>
+</body>
+</html>
